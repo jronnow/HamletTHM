@@ -5,6 +5,7 @@ nmap -vvvv -sC -sV -p- -T4 MACHINE_IP
 This reveals a few open ports, several of which are very common. Namely, 21 (ftp), 22 (ssh) and 80 (http).
 
 Notably, the FTP server allows anonymous login. Connecting to it, we find two files, password-policy.md and ufw.status.
+Switching to passive mode (command: passive), we can then use get to download both files.
 We learn from the password policy that the password must be between 11 and 13 characters and all lowercase.
 We also learn from ufw.status that port 8080 is also open, and navigating to it in a browser gives us a login page. Score.
 
