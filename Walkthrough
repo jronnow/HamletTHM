@@ -13,12 +13,16 @@ A directory enumeration of port 80 in Gobuster reveals robots.txt, which contain
 On the homepage of port 80, we can find an alternative name for Michael: ghost.
 Michael is obsessed with Hamlet, so we can guess that his password will probably be something from the version of Hamlet this org is using.
 So, we can create a wordlist using that info and the password policy.
-I used Python to get all the unique words in Hamlet, make them lowercase, and remove any that weren't 12 characters long:
-
-<<<CODE GOES HERE ONCE IT WORKS>>>
+I used Python to get all the unique words in Hamlet, make them lowercase, and remove any that weren't 12 characters long.
 
 Using this we can head over to the login page on port 8080 and try a Hydra attack:
 
 hydra -l ghost -P hamletwordlist.txt http-post-form://MACHINE_IP -s 8080 "/login.html:username=^USER^&password=^PASS^:Login failed"
 
-Currently this returns no valid passwords for me, but it's probably a fault with my wordlist. Will return to this later and try to make Python do what I tell it to.
+The password, then, is vnsanctified. This gets us into the login portal on port 8080.
+
+It does not however get us into SSH. When we run
+
+ssh ghost@MACHINE_IP
+
+we get Permission denied (publickey). So there's some element of SSH at work here that I'm unfamiliar with. Will need to research and come back to it later.
