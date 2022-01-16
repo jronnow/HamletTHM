@@ -58,7 +58,11 @@ We can now login as any user we want.
 Logging in as ophelia, we find she only has access to one tool: Annotation. But we find something different in it than what was in ghost's Annotation tab: a reference to a password (quite a strong one at that, if it weren't stored here in plaintext).
 
 Unfortunately we get the same result trying to ssh into the system as admin and ophelia, but if we head back to the FTP server and try to login as ophelia, the password from the annotation gets us in.
-Logged in to the FTP server as ophelia (and switching once again to PASV), we find a flag, specifically Flag 3. I wonder where we missed Flag 2?
+Logged in to the FTP server as ophelia (and switching once again to PASV), we find a flag, specifically Flag 3. 
+
+I wonder where we missed Flag 2?
+Second flag was found in the gravediggers.py file enumerating ftp ..
+
 
 Trying to FTP in as ghost and admin gets us nowhere, so we'll chalk that up to a red herring for now. Let's take a look at some of these other ports.
 
