@@ -7,14 +7,36 @@ This reveals a few open ports, several of which are very common. Namely, 21 (ftp
 Notably, the FTP server allows anonymous login. Connecting to it, we find two files, password-policy.md and ufw.status.
 Switching to passive mode (command: passive), we can then use get to download both files.
 We learn from the password policy that the password must be between 11 and 13 characters and all lowercase.
-We also learn from ufw.status that port 8080 is also open, and navigating to it in a browser gives us a login page. Score.
+We also learn from ufw.status that a number of ports are open that nmap didn't detect:
+
+To                         Action      From
+--                         ------      ----
+20/tcp                     ALLOW       Anywhere                  
+21/tcp                     ALLOW       Anywhere                  
+22/tcp                     ALLOW       Anywhere                  
+80/tcp                     ALLOW       Anywhere                  
+501/tcp                    ALLOW       Anywhere                  
+8080/tcp                   ALLOW       Anywhere                  
+8000/tcp                   ALLOW       Anywhere                  
+1603/tcp                   ALLOW       Anywhere                  
+1564/tcp                   ALLOW       Anywhere                  
+50000:50999/tcp            ALLOW       Anywhere                  
+
+Port 8080 in particular is a login page. Score.
+
+Ports 1564 and 1603 don't appear to be actually open, so for now I'll treat them as simply being a nod to Hamlet (Shakespeare was born in 1564 and Hamlet debuted in 1603).
+
+I'm not sure what ports 50000 thru 50999 are for, but I'm sure gonna find out later.
 
 A directory enumeration of port 80 in Gobuster reveals robots.txt, which contains Flag 1.
 
 On the homepage of port 80, we can find an alternative name for Michael: ghost.
-Michael is obsessed with Hamlet, so we can guess that his password will probably be something from the version of Hamlet this org is using.
+The homepage states Michael is obsessed with Hamlet, so we can guess that his password will probably be something from the version of Hamlet this org is using.
 So, we can create a wordlist using that info and the password policy.
-I used Python to get all the unique words in Hamlet, make them lowercase, and remove any that weren't 12 characters long.
+
+Using cewl, a nifty wordlist generator that ships with Kali Linux, we can generate a wordlist of every unique word in Hamlet that is at least 11 characters long, and make them all lowercase:
+
+cewl -m 11 -w hamletwordlist.txt --lowercase http://MACHINE_IP/hamlet.txt
 
 Using this we can head over to the login page on port 8080 and try a Hydra attack:
 
@@ -27,3 +49,17 @@ It does not however get us into SSH. When we run
 ssh ghost@MACHINE_IP
 
 we get Permission denied (publickey). So there's some element of SSH at work here that I'm unfamiliar with. Will need to research and come back to it later.
+
+Moving ahead with the login portal, the ghost user has access to three tools on this site: Annotation, Projects, and Users.
+Looking through them, Annotation doesn't appear to have anything immediately useful, but if we open Hamlet in the Projects tab we find a reference to something called "OpheliasNotes". Curious. There doesn't appear to be a way to open it, so we'll come back to it later.
+In Users, we find something really interesting. The ghost user can change the password for the other two users: admin and ophelia.
+We can now login as any user we want.
+
+Logging in as ophelia, we find she only has access to one tool: Annotation. But we find something different in it than what was in ghost's Annotation tab: a reference to a password (quite a strong one at that, if it weren't stored here in plaintext).
+
+Unfortunately we get the same result trying to ssh into the system as admin and ophelia, but if we head back to the FTP server and try to login as ophelia, the password from the annotation gets us in.
+Logged in to the FTP server as ophelia (and switching once again to PASV), we find a flag, specifically Flag 3. I wonder where we missed Flag 2?
+
+Trying to FTP in as ghost and admin gets us nowhere, so we'll chalk that up to a red herring for now. Let's take a look at some of these other ports.
+
+Port 501 is marked open--unusual--and the service is listed as Nagios NSCA. Unfortunately searchsploit doesn't return anything related to NSCA and trying to connect to the port in browser gets us nothing.
