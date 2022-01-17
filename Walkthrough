@@ -48,7 +48,8 @@ It does not however get us into SSH. When we run
 
 ssh ghost@MACHINE_IP
 
-we get Permission denied (publickey). So there's some element of SSH at work here that I'm unfamiliar with. Will need to research and come back to it later.
+we get Permission denied (publickey).
+(The creator of the room, Ingo Kleiber, confirmed to me that the SSH port being open is a red herring.)
 
 Moving ahead with the login portal, the ghost user has access to three tools on this site: Annotation, Projects, and Users.
 Looking through them, Annotation doesn't appear to have anything immediately useful, but if we open Hamlet in the Projects tab we find a reference to something called "OpheliasNotes". Curious. There doesn't appear to be a way to open it, so we'll come back to it later.
@@ -71,7 +72,7 @@ Heading back to WebAnno, we can upload a reverse shell in the Projects tab under
 From there, it's a simple matter of the following:
 
 nc -lvnp [listening port configured in your reverse shell]
-Change the URL on port 8000 to end in /document/1/source/php-reverse-shell.php
+Change the URL on port 8000 to end in /document/1/source/[filename of your reverse shell]
 
 And now you've popped a reverse shell as www-data. (I wasn't able to stabilize this shell since python isn't installed on the target machine, but it doesn't turn out to be necessary.)
 Now you're in the / directory, and the find command works. Why not run find / -type f -name *flag* 2>/dev/null?
