@@ -65,3 +65,30 @@ If we cd out of the ophelia directory we can find two files, gravediggers.py and
 Trying to FTP in as ghost and admin gets us nowhere, so we'll chalk that up to a red herring for now. Let's take a look at some of these other ports.
 
 Port 501 is marked open--unusual--and the service is listed as Nagios NSCA. Unfortunately searchsploit doesn't return anything related to NSCA and trying to connect to the port in browser gets us nothing.
+
+Going back to port 8000 we find that it simply returns the contents of hamlet.txt, but looking at the page source we can see that it pulls this from somewhere. Maybe somehwere that we can upload files to?
+Heading back to WebAnno, we can upload a reverse shell in the Projects tab under Documents. I used a standard PHP reverse shell.
+From there, it's a simple matter of the following:
+
+nc -lvnp [listening port configured in your reverse shell]
+Change the URL on port 8000 to end in /document/1/source/php-reverse-shell.php
+
+And now you've popped a reverse shell as www-data. (I wasn't able to stabilize this shell since python isn't installed on the target machine, but it doesn't turn out to be necessary.)
+Now you're in the / directory, and the find command works. Why not run find / -type f -name *flag* 2>/dev/null?
+
+Well, because that will also return a bunch of stuff that isn't relevant. But it will also show you that there's a file, /stage/flag, that contains Flag 4.
+
+The next logical step would be to poke around in /root, but as might be expected we don't have permission to cd into root. Time to poke around for privesc vectors.
+
+I checked around for SUID binaries, etc, but it turns out we can read /etc/shadow in addition to /etc/passwd. Well, now. Let's take the root line from both these files over to our attacking machine, where our friend John will make some magic with them:
+
+echo [root line from /etc/passwd] > passwd.txt
+echo [root line from /etc/shadow] > shadow.txt
+unshadow passwd.txt shadow.txt > unshadowed.txt
+john --format=crypt unshadowed.txt
+
+The hash type took me a while to figure out what to do with it, but adding the format tag will make it work.
+After all this, we find that root's password is murder. Delightfully thematic.
+Pop back over to the reverse shell and su into root with your newfound knowledge.
+Now we can cd into root, but in order to see anything we need to add an -la to our ls, which reveals .flag containing Flag 5. Ever closer!
+
